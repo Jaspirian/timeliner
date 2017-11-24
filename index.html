@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+<script src="jquery-3.2.1.min.js"></script>
+<script src="p5.js"></script>
+<script src="jscolor.js"></script>
+
+<script src="globals.js"></script>
+<script src="parser.js"></script>
+<script src="character.js"></script>
+<script src="story.js"></script>
+<script src="timeline.js"></script>
+<script src="groups.js"></script>
+<script src="mentions.js"></script>
+
+<title>Page Title</title>
+</head>
+<body>
+
+<!-- <div id="overlay"></div> -->
+<div id="overlay-back"></div>
+
+<div id="content">
+
+	<div id="header">
+
+		<h2 id="title">First line is the title.</h2>
+
+	</div>
+
+	<div id="columns">
+
+		<!-- <div class="text">text</div> -->
+		<div id="notes" class="column">
+
+			<textarea id="notesArea">First line is the title.
+
+CAPS ARE A CHAPTER
+
+This is an event.
+
+This is an event too.
+
+Hover over a word with a capital first letter, like "This".
+
+Now click it. This will add it to the two columns on the right.
+
+Click it again to remove it--or you can manipulate the word on its corresponding information box.
+
+Try clicking on the header (e.g. "This" if you clicked on "This") and typing in a comma, then another word, like "Click." Then press enter.</textarea>
+
+			<input type="file" id="upload" accept=".txt" onchange="fileUpload(this.files[0])">
+
+		</div>
+
+		<div id="timeline" class="column"></div>
+
+		<div id="groups" class="column"></div>
+
+		<div id="mentions" class="column"></div>
+
+	</div>
+
+</div>
+
+
+</body>
+</html>

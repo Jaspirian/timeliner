@@ -1,0 +1,88 @@
+Morte D'Arthur
+
+CHAPTER 1
+
+Uther Pendragon, king of all England, wars with the Duke of Tintagil, who rules Cornwall.
+Uther convinces the Duke of Tintagil to bring his wife, Igraine, to a celebration.
+Uther tries to sleep with Igraine: she refuses and flees with her husband, unannounced.
+Uther is furious. He summons for them again and they refuse, so he declares war.
+The Duke readies Castle Tintagil and Castle Terabil for war. He puts Igraine in Tintagil and himself in Terabil.
+Uther sieges Terabil, and soon after falls lovesick. Uther Sir Ulfius, a noble knight, hears his plea and goes to ask Merlin for advice.
+Ulfius finds a beggar who introduces himself as Merlin. Merlin agrees to help if he's well rewarded, and sends Ulfius on ahead.
+
+CHAPTER 2
+
+Ulfius returns to Uther and Merlin meets them both. Merlin tells a prophecy: Uther will have a son by Igraine. He demands the son be given to him in exchange for helping Uther, who agrees.
+Merlin instructs Uther: he will be disguised as the Duke of Tintagil. Ulfius will appear as Sir Brastias and Merlin as Sir Jordanus, both knights of the Duke's.
+Merlin says they'll sneak into Tintagil by pretending Uther is deathly ill. The trio leave the battlefield.
+The Duke sees Uther leave and gives chase, abandoning his protection and is slain in the fields.
+Uther sleeps with Igraine and begats Arthur, then is pulled away by Merlin the next morning.
+Igraine hears of her husband's death and wonders about who came to her after he was slain in the fields.
+The Barons beg Uther to call off his war and he does, to spare Igraine.
+Ulfius negotiates with Igraine to meet with Uther: when she does, he recommends a marriage and all assent. They're married the next morning.
+At Uther's request, King Lot of Lothian and of Orkney weds Morgawse, Gawaine's mother. King Nentres of the land of Garlot weds Elaine.
+The third sister of Igraine, Morgan le Fay, is put to school in a nunery and learns Necromancy. Afterwards she weds King Uriens of Gore, Sir Ewain's le Blanchemain's father.
+
+CHAPTER 3
+
+Queen Igraine grows visibly pregnant and is confronted by Uther, who asks who the father is. She explains the situation and Uther comes clean. Igraine is relieved and pleased.
+Merlin comes to Uther and reminds him of his promise: Uther assents. Merlin says Sir Ector, a true and faithful lord of Uther's, who controls parts of England and Wales, will take care of Arthur like he does his own son.
+Sir Ector arrives and is well rewarded by Uther. When Arthur is born he is sent to Merlin, who has him Christened "Arthur."
+
+CHAPTER 4
+
+King Uther falls ill and his enemies embroil him in a terrible battle.
+Merlin advises King Uther: he should be carried to the battlefield in order for the battle to be won.
+Uther does as Merlin recommends, and a great host from the North meets him in battle at St. Albans.
+In the battle Sir Ulfius and Sir Brastias do great deeds of arms and the enemies from the North are defeated.
+Uther returns to London and celebrates his victory, then falls deathly ill and remains so for 3 days, unable to speak.
+The Barons of the realm ask Merlin for his advice, and he says Uther will make one last proclamation tomorrow, by dint of God and Merlin both.
+Merlin asks Uther in view of the Barons about his son Arthur: will he be king? Uther says he will, and dies.
+Uther is buried and is mourned by his Barons and by Igraine.
+
+CHAPTER 5
+
+The realm does poorly without Uther: many powerful lords amass men and wish to be king.
+Merlin goes to the Archbishop of Canterbury and tells him to send for all the lords of the realm to meet in London on Christmas, in order to see Jesus show a miracle. The Archbishop does so.
+On Christmas everyone spends the day in church. After first mass, the people find the Sword in the Stone in the courtyard of the greatest church in London.
+The Sword in the Stone is a giant stone of marble. Buried inside the stone is a body of steel like an anvil, and in that is stuck a sword. Written on the stone are the words "Whoso pulleth out this sword of this stone and anvil, is rightwise king born of all England."
+The people tell the Archbishop, who says to continue praying until the last mass, and they do.
+All the lords gather and inspect the sword, but are unable to pull it out. The Archbishop says the one who'll pull the sword out isn't there but shall be made known.
+The Archbishop recommends ten good knights be chosen to keep the sword safe until it is withdrawn.
+The Barons organize a joust and a torunament on New Year's Day, so as to choose the best and to bring both lords and commoners to the stone.
+On New Year's Day the tournament begins: Sir Ector, who has great livelihood in London, rides to the jousts with Sir Kay his son and Arthur.
+Sir Kay is recently a Knight as of All Hallowmass and realizes he's left his sword at Ector's lodgings. He asks Arthur to ride for it and Arthur does.
+Arthur rides to the lodgings but finds everyone gone at the tourney. Angry, he swears he'll get a sword for his brother and heads to the churchyard.
+Arthur arrives at the Sword in the Stone and finds it undefended: the ten knights have gone to watch the bouts. He pulls the sword out and takes it to Kay, who immediately recognizes it. Kay tells his father Ector he will be the King and Ector takes his sons to the churchyard.
+Ector makes Kay swear on the Bible at the church: how did he come by the sword? Kay explains the truth and Arthur explains his story.
+Ector explains arthur will be King to a confused Arthur. He has Arthur take the sword and put it back in the stone: Kay and Ector cannot retrieve it.
+
+CHAPTER 6
+
+Kay and Ector kneel to Arthur and Ector explains to him his lineage. Arthur is distressed but Ector makes him swear to be his good and gracious lord. He also asks that Kay be made Seneschal and Arthur more than agrees to both.
+Arthur goes to the Archbishop and explains he has withdrawn the sword.
+On Twelfth-Day all the barons arrive at the Sword in the Stone and fail to pull it out until Arthur does. Angry to be outdone by a middle-born boy, they put things off 'til Candlemas.
+On Candlemas the same thing happens and the Barons delay until Easter.
+
+FEATURES
+
+//Click name to add to groups
+//Click X to remove from groups
+//Preserve "of the", so Randy van Bilderbilt = hover on Randy, hover on Bilderbilt, and full hover on van
+//Add additional names
+//Load from text file
+//Changeable color
+//Random colors
+//Handle "St. Jerome"
+//Handle multiple click/hover options
+Drag event to group
+//Bugfix: importing text file doesn't work after typing in notesArea
+//Edit name
+Drag to reorder groups
+Save as cookies?
+Minimize group
+Maximize group
+Pop out group
+Expand one column
+Save to text file
+Fix scrolling problem

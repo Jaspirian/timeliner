@@ -1,0 +1,288 @@
+/*Universal styling*/
+
+body, html {
+	margin:0;
+}
+
+/*Overlay handling*/
+#overlay-back {
+	opacity: 0.6;
+	filter: alpha(opacity=60);
+	background-color: black;
+
+	width: 100%;
+	height: 100%;
+
+	position: absolute;
+	z-index: 5;
+
+	top: 0; left: 0; right: 0; bottom: 0;
+	margin: auto;
+
+	display: none;
+}
+
+/*General columns handling*/
+
+#content {
+	margin: 0;
+
+	height: 100vh;
+	box-sizing: border-box;
+	top: 0;
+	bottom: 0;
+	padding: 10px;
+	padding-right: 0;
+
+	display: flex;
+	flex-direction: column;
+}
+
+#header {
+	flex: 0;
+}
+
+#columns {
+	flex: 1;
+
+	display: flex;
+	flex-direction: row;
+
+	height: 100%;
+}
+
+.column {
+	flex: 1;
+
+	height: 100%;
+	margin-right: 10px;
+}
+
+#text {
+	flex: 2.5;
+	min-width: 200px;
+}
+
+#timeline {
+	flex: 2;
+	min-width: 200px;
+}
+
+#groups, #mentions {
+	min-width: 100px;
+}
+
+#notesArea {
+	width: 100%;
+	height: calc(100% - 25px - 5px);
+	box-sizing: border-box;
+
+	resize: none;
+}
+
+#upload {
+	height: 25px;
+	width: 100%;
+}
+
+#timeline, #groups, #mentions {
+	overflow: scroll;
+	overflow-x: hidden;
+	background-color: black;
+}
+
+#mentions {
+	background-color: white;
+}
+
+/*Timeline column*/
+
+#timeline .arrow {
+	height: 70px;
+
+	background-position: center;
+}
+
+#timeline .arrow.top {
+	background-image: url("images/arrowFletching.png");
+}
+
+#timeline .arrow.bottom {
+	background-image: url("images/arrowTip.png");
+}
+
+#timeline #body {
+	background-image: url("images/arrowShaft.png");
+	background-position: center;
+	min-height: calc(100% - 140px);
+}
+
+#timeline .chapter {
+	padding-top: 20px;
+}
+
+#timeline .title {
+	background-color: white;
+
+	font-style: ITALIC;
+    color: black;
+    text-align: center;
+    font-style: italic;
+    font-size: 175%;
+    margin: 20px;
+    margin-top: 0px;
+}
+
+#timeline .event {
+	color: white;
+
+	width:45%;
+    margin: 20px;
+    margin-bottom: 0px;
+}
+
+#timeline .event {
+	text-align: right;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+#timeline .event.right {
+    text-align: left;
+    margin-left: auto;
+}
+
+#timeline .clickable:hover {
+	cursor: pointer;
+}
+
+/*Groups column*/
+#groups .group, .blank {
+	width: calc(100% - 20px);
+
+	padding: 5px;
+	margin: 10px;
+	margin-bottom: 20px;
+	box-sizing: border-box;
+	position: relative;
+
+	border-radius: 5px;
+
+	border: 2px dashed #fff;
+
+	max-height: 500px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+#groups .blank {
+	background-color: white;
+}
+
+/*#groups .blank .tooltip {
+	margin: 0px;
+	font-style: italic;
+}*/
+
+#groups .group {
+	display: flex;
+	flex-direction: column;
+}
+
+#groups .group .topDiv {
+	float: left;
+
+	width: 100%;
+}
+
+#groups .group .titleDiv {
+	float: left;
+
+	height: 100%;
+	width: calc(100% - 20px);
+}
+
+#groups .group .squaresDiv {
+	float: left;
+	height: 100%;
+	width: 20px;
+}
+
+#groups .group .titleDiv .title {
+	font-size: 200%;
+	margin-bottom: 0;
+	margin-top: 0;
+	margin-right: 20px;
+
+	background: transparent;
+	border: none;
+}
+
+#groups .group .squaresDiv .close, .colorBox {
+	height: 18px;
+	width: 20px;
+
+	border-radius: 5px;
+
+	color: white;
+	font-weight: bold;
+
+	text-align: center;
+
+	user-select: none;
+}
+
+#groups .group .squaresDiv .close {
+	background-color: black;
+}
+
+#groups .group .squaresDiv .colorBox {
+	right: 25px;
+
+	width: 16px;
+	height: 14px;
+	border: 2px solid black;
+}
+
+#groups .group .squaresDiv .close, .colorBox:hover {
+	cursor: pointer;
+}
+
+#groups .group .squaresDiv .close:hover:after {
+	content: "X";
+}
+
+#groups .group .bottomDiv {
+	float: left;
+
+	flex: 1;
+	display: flex;
+}
+
+#groups .group .bottomDiv ul {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: space-between;
+}
+
+#groups .group .bottomDiv li {
+	flex: 1;
+}
+
+#groups .poppedOut {
+	position: absolute;
+	z-index: 10;
+	margin: auto;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	width: fit-content;
+	max-width: 80%;
+	max-height: 80%;
+}
+
+#groups .poppedOut li {
+	margin: 5px;
+}
