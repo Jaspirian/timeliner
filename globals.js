@@ -28,3 +28,13 @@ Array.prototype.duplicates = function(array) {
 
 	return copies;
 }
+
+//returns a match, if any, of array elements against a string.
+String.prototype.containsAny = function(array) {
+	
+	return array.find(function(element) {
+		return this.includes(element);
+	}, this);
+
+	return null;
+}

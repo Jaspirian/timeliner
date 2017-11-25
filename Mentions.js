@@ -1,7 +1,9 @@
 var canvas;
-var chapters;
-var mentions;
+var mentionLine;
+var mentionChapters = [];
+var mentionCharacters = [];
 var hoverText;
+var mentionedCharacters;
 function setup() {
 	canvas = createCanvas(100, 100);
 	canvas.parent(document.getElementById("mentions"));
@@ -9,42 +11,88 @@ function setup() {
 }
 
 function draw() {
+	if(story) updateMentions(story);
+
 	background(0);
 
-	var line = new Line();
-	if(story) {
-		chapters = new Chapters(line.lineMargin + line.numFletches*line.slope.y);
-		chapters.setDivsY();
-
-		mentions = new Mentions(chapters);
-		mentions.show();
-
-		chapters.show();
-
-		if(hoverText) hoverText.show();
+	if(mentionCharacters.length > 0) {
+		var reversedCharacters = mentionCharacters.reverse();
+		reversedCharacters.forEach(function(character) {
+			character.show();
+		});
 	}
 
-	line.show();
+	if(mentionChapters.length > 0) {
+		mentionChapters.forEach(function(chapter) {
+			chapter.show();
+			chapter.mentionEvents.forEach(function(event) {
+				event.show();
+			});
+		});
+	}
+
+	if(mentionLine) mentionLine.show();
+
+	if(hoverText) hoverText.show();
+}
+
+var updateMentions = function(story) {
+	mentionLine = new Line();
+
+	mentionChapters = [];
+	story.chapters.forEach(function(chapter) {
+		mentionChapters.push(new MentionChapter(chapter));
+	});
+	var availableSpace = height - (mentionLine.margin * 4) - ((mentionLine.numFletches * mentionLine.slope.y) * 2);
+	var numElements = 0;
+	mentionChapters.forEach(function(chapter) {
+		availableSpace -= (chapter.margin + chapter.weight + chapter.margin);
+		numElements++;
+		chapter.mentionEvents.forEach(function(event) {
+			availableSpace -= (event.margin + event.weight + event.margin);
+			numElements++;
+		});
+	});
+	var individualSpace = availableSpace / (numElements - 1);
+	var y = (mentionLine.margin * 2) + (mentionLine.numFletches * mentionLine.slope.y);
+	mentionChapters.forEach(function(chapter) {
+		chapter.y = y;
+		y += chapter.margin + chapter.weight + chapter.margin + individualSpace;
+		chapter.mentionEvents.forEach(function(event) {
+			event.y = y;
+			y += event.margin + event.weight + event.margin + individualSpace;
+		});
+	});
+
+	mentionCharacters = [];
+	if(characters) characters.forEach(function(character) {
+		if(character.isSelected) mentionCharacters.push(new MentionCharacter(character));
+	});
 }
 
 function windowResized() {
 	resizeCanvas(canvas.parent().offsetWidth - 17, canvas.parent().offsetHeight - 4);
+	updateMentions(story);
 }
 
 function mouseMoved() {
 	hoverText = null;
-	chapters.divs.forEach(function(div) {
-		if(div.isHovered(mouseX, mouseY)) {
-			hoverText = new HoverText(div.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
+	mentionChapters.forEach(function(chapter) {
+		if(chapter.isHovered(mouseX, mouseY)) {
+			hoverText = new HoverText(chapter.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
 		}
+		chapter.mentionEvents.forEach(function(event) {
+			if(event.isHovered(mouseX, mouseY)) {
+				hoverText = new HoverText(event.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
+			}
+		});
 	});
 }
 
-var HoverText = function(string, color, x, y, x2, y2) {
+var HoverText = function(string, color, x, y, width) {
 	this.x = x;
 	this.y = y;
-	this.x2 = x2;
-	this.y2 = y2;
+	this.width = width;
 	this.color = color;
 	this.string = string;
 
@@ -52,14 +100,14 @@ var HoverText = function(string, color, x, y, x2, y2) {
 		fill(255);
 		noStroke();
 		if(this.color) fill(this.color); 
-		text(this.string, this.x, this.y, this.x2, this.y2);
+		text(this.string, this.x, this.y, this.width);
 	}
 }
 
 var Line = function() {
-	this.lineMargin = 20;
-	this.topPoint = {x:width/2, y:this.lineMargin};
-	this.botPoint = {x:width/2, y:height-this.lineMargin};
+	this.margin = 20;
+	this.topPoint = {x:width/2, y:this.margin};
+	this.botPoint = {x:width/2, y:height-this.margin};
 	this.slope = {x:20, y:20};
 	this.numFletches = 3;
 
@@ -82,42 +130,6 @@ var Line = function() {
 	}
 }
 
-var Chapters = function(offset) {
-	this.offset = offset;
-	var divs = [];
-	// console.log(story);
-	story.chapters.forEach(function(chapter) {
-		divs.push(new MentionChapter(chapter));
-		chapter.events.forEach(function(event) {
-			divs.push(new MentionEvent(event));
-		});
-	});
-	this.divs = divs;
-
-	this.setDivsY = function() {
-		var offset = this.offset;
-		var extraSpace = height - (this.offset * 2);
-		this.divs.forEach(function(div) {
-			extraSpace -= div.margin*2;
-		});
-		var individualSpace = extraSpace/(this.divs.length-1);
-
-		for(var i=0; i<this.divs.length; i++) {
-			this.divs[i].y = offset;
-			if(individualSpace > 0) this.divs[i].y += individualSpace * i;
-			offset += this.divs[i].margin*2;
-		};
-
-		if(offset > height) resizeCanvas(canvas.parent().offsetWidth - 17, offset + this.offset);
-	}
-
-	this.show = function() {
-		this.divs.forEach(function(div) {
-			div.show();
-		});
-	}
-}
-
 var MentionChapter = function(chapter) {
 	this.width = 25;
 	this.margin = 10;
@@ -125,6 +137,12 @@ var MentionChapter = function(chapter) {
 	this.y;
 	this.string = "";
 	this.title = chapter.title;
+
+	this.mentionEvents = [];
+	chapter.events.forEach(function(event) {
+		this.mentionEvents.push(new MentionEvent(event));
+	}, this);
+
 	chapter.events.forEach(function(event) {
 		this.string += event.string + "\n";
 	}, this);
@@ -156,7 +174,7 @@ var MentionEvent = function(event) {
 	this.y;
 	this.string = event.string;
 
-	this.show = function() {
+	this.show = function(offset) {
 		noFill();
 		stroke(255);
 		strokeWeight(this.weight);
@@ -176,79 +194,74 @@ var MentionEvent = function(event) {
 	}
 }
 
-var Mentions = function(chapters) {
-	this.initialOffset = 20;
-	this.extraOffset = 10;
+var MentionCharacter = function(character) {
+	this.initialMargin = 30;
+	this.margin = 15;
+	this.weight = 3;
+	this.diam = 10;
+
+	this.character = character;
+	this.x = width/2;
+	var index = mentionCharacters.length;
+	this.isRightSide = index % 2 == 0;
+	var sideIndex = (index - (index%2)) / 2;
+	if(this.isRightSide) {
+		this.x += this.initialMargin + (sideIndex * this.margin);
+	} else {
+		this.x -= this.initialMargin + (sideIndex * this.margin);
+	}
+	// console.log(this.x);
+
+	this.circles = [];
+	mentionChapters.forEach(function(chapter) {
+		if(chapter.string.containsAny(this.character.names)) {
+			this.circles.push({x:this.x, y:chapter.y + chapter.margin - chapter.weight});
+		}
+	}, this);
+
+	this.squares = [];
+	var mentionsStart;
+	var mentionsEnd;
+	mentionChapters.forEach(function(chapter) {
+		chapter.mentionEvents.forEach(function(event) {
+			if(event.string.containsAny(this.character.names)) {
+				if(!mentionsStart) mentionsStart = event; 
+				mentionsEnd = event;
+			} else {
+				if(mentionsStart) {
+					this.squares.push({x:width/2, y:mentionsStart.y + mentionsStart.margin - mentionsStart.weight, x2:this.x, y2:mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight, corner:25});
+					mentionsStart = null;
+					mentionsEnd = null;
+				}
+			}
+		}, this);
+	}, this);
+	if(mentionsStart) this.squares.push({x:width/2, y:mentionsStart.y + mentionsStart.margin - mentionsStart.weight, x2:this.x, y2:mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight, corner:25});
 
 	this.show = function() {
-		var mentionObject = this;
-		var charactersSoFar = 0;
-		var selectedCharacters = characters.filter(function(character) {
-			return character.isSelected;
-		});
-		var reversed = selectedCharacters.reverse();
+		this.circles.forEach(function(circle) {
+			rectMode(CENTER);
+			noStroke();
+			fill(this.character.color);
+			ellipse(circle.x, circle.y, this.diam);
+			rectMode(CORNER);
+		}, this);
 
-		var extraSpace = (width/2 - this.initialOffset*2);
-		var individualSpace = extraSpace/selectedCharacters.length;
-		reversed.forEach(function(character) {
-			// noLoop();
-			var index = reversed.length - charactersSoFar - 1;
-			var startDiv;
-			var endDiv;
-			chapters.divs.forEach(function(div) {
-				var isContained = false;
-				character.names.forEach(function(name) { //PERFORMANCE COULD BE IMPROVED
-					// console.log(div);
-					// console.log(div.string);
-					if(div.string.includes(name)) isContained = true;
-				});
-				if(isContained) {
-					if(div instanceof MentionChapter) {
-						mentionObject.circle(character, index, div, individualSpace);
-					} else if(div instanceof MentionEvent) {
-						if(!startDiv) startDiv = div;
-						endDiv = div;
-					}
-				} else {
-					if(startDiv && endDiv) {
-						mentionObject.rectangle(character, index, startDiv, endDiv, individualSpace);
-						startDiv = null;
-						endDiv = null;
-					}
-				}
-			});
-			if(startDiv && endDiv) {
-				mentionObject.rectangle(character, index, startDiv, endDiv, individualSpace);
+		this.squares.forEach(function(square) {
+			rectMode(CORNERS);
+			stroke(this.character.color);
+			strokeWeight(this.weight);
+			noFill();
+			if(this.isRightSide) {
+				rect(square.x, square.y, square.x2, square.y2, 0, square.corner, square.corner, 0);
+			} else {
+				rect(square.x2, square.y, square.x, square.y2, square.corner, 0, 0, square.corner);
 			}
-			charactersSoFar++;
-		});
+			rectMode(CORNER);
+		}, this);
 	}
 
-	this.circle = function(character, soFar, div, extraSpace) {
-		var circleWidth = 7;
-		fill(character.color);
-		noStroke();
-		rectMode(CENTER);
-		if(soFar%2 == 0) {
-			ellipse(width/2 + this.initialOffset + this.extraOffset*(soFar/2) + extraSpace*((soFar+1)/2), div.y + div.margin, circleWidth, circleWidth);
-		} else {
-			ellipse(width/2 - this.initialOffset - this.extraOffset*((soFar-1)/2) - extraSpace*((soFar+1)/2), div.y + div.margin, circleWidth, circleWidth);
-		}
-		rectMode(CORNER); //reset
-	}
-
-	this.rectangle = function(character, soFar, startDiv, endDiv, extraSpace) {
-		var roundedCorners = 20;
-		var weight = 2;
-		stroke(character.color);
-		strokeWeight(weight);
-		noFill();
-		rectMode(CORNERS);
-		if(soFar%2 == 0) {
-			rect(width/2, startDiv.y + startDiv.margin, width/2 + this.initialOffset + this.extraOffset*(soFar/2) + extraSpace*((soFar+1)/2), endDiv.y + endDiv.margin, 0, roundedCorners, roundedCorners, 0);
-		} else {
-			rect(width/2 - this.initialOffset - this.extraOffset*((soFar-1)/2) - extraSpace*((soFar+1)/2), startDiv.y + startDiv.margin, width/2, endDiv.y + endDiv.margin, roundedCorners, 0, 0, roundedCorners);
-		}
-		rectMode(CORNER); //reset
+	this.isHovered = function(x, y) {
+		
 	}
 }

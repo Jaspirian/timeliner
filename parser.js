@@ -48,6 +48,9 @@ var parse = function() {
 	//groups
 	groups.pushStory(newStory);
 
+	//mentions
+	updateMentions(newStory);
+
 	//update Story
 	story = newStory;
 }

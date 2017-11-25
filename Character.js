@@ -10,3 +10,11 @@ var Character = function(names) {
 	this.isSelected = false;
 	this.isUserMade = false;
 }
+
+var addCharacter = function(names) {
+
+}
+
+var removeCharacter = function(character) {
+	
+}

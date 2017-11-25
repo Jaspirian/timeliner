@@ -1,6 +1,6 @@
 var Groups = function(charactersArr) {
 	this.divs = [];
-	this.story;
+	// this.story;
 	this.poppedOut;
 
 	var container = document.getElementById("groups");
@@ -32,7 +32,7 @@ var Groups = function(charactersArr) {
 	}
 
 	this.pushStory = function(newStory) { //ROOM FOR PERFORMANCE IMPROVEMENTS
-		this.story = Object.assign({}, newStory);
+		// this.story = Object.assign({}, newStory);
 		this.divs.forEach(function(div) {
 			div.resetList();
 		});
@@ -155,10 +155,12 @@ var GroupDiv = function(character) {
 		if(this.list) this.list.remove();
 
 		var list;
-		var chapters = groups.story.chapters;
+		// var chapters = groups.story.chapters;
+		// var chapters = story.chapters;
 		// console.log(chapters);
 		list = document.createElement("ul");
-		groups.story.chapters.forEach(function(chapter) {
+		// groups.story.chapters.forEach(function(chapter) {
+		story.chapters.forEach(function(chapter) {
 			chapter.events.forEach(function(event) {
 				character.names.forEach(function(name) {
 					if(event.string.includes(name) && !referencedEvents.includes(event)) {
