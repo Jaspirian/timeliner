@@ -38,3 +38,15 @@ String.prototype.containsAny = function(array) {
 
 	return null;
 }
+
+//returns an element with the given features.
+var makeElement = function(elementType, className, id, textContent) {
+	var elem;
+
+	elem = document.createElement(elementType);
+	if(className) elem.className = className;
+	if(id) elem.id = id;
+	if(textContent) elem.textContent = textContent;
+
+	return elem;
+}

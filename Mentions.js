@@ -1,9 +1,83 @@
 var canvas;
-var mentionLine;
-var mentionChapters = [];
-var mentionCharacters = [];
-var hoverText;
-var mentionedCharacters;
+var Mentions = function() {
+	this.line = new Line();
+	this.chapters = [];
+	this.characters = [];
+
+	this.hovered;
+
+	this.setChapters = function() {
+		var chapters = [];
+
+		story.chapters.forEach(function(chapter) {
+			chapters.push(new MentionChapter(chapter));
+		});
+
+		//setting Y values, mimicking how divs work
+		var availableSpace = height - this.line.topMargin - this.line.bottomMargin;
+		var numElements = 0;
+		chapters.forEach(function(chapter) {
+			availableSpace -= (chapter.margin + chapter.weight + chapter.margin);
+			numElements++;
+			chapter.mentionEvents.forEach(function(event) {
+				availableSpace -= (event.margin + event.weight + event.margin);
+				numElements++;
+			});
+		});
+		var individualSpace = availableSpace / (numElements - 1);
+		if(individualSpace < 0) individualSpace = 0;
+		var y = this.line.topMargin;
+		chapters.forEach(function(chapter) {
+			chapter.y = y;
+			y += chapter.margin + chapter.weight + chapter.margin + individualSpace;
+			chapter.mentionEvents.forEach(function(event) {
+				event.y = y;
+				y += event.margin + event.weight + event.margin + individualSpace;
+			});
+		});
+
+		if(y > height) canvas.resize(width, y + this.line.bottomMargin);
+
+		this.chapters = chapters;
+	}
+
+	this.setCharacters = function() {
+		this.characters = [];
+
+		var chars = characters.filter(function(character) {
+			return character.isSelected;
+		});
+
+		chars.forEach(function(character) {
+			this.characters.push(new MentionCharacter(character));
+		}, this);
+	}
+
+	this.setHovered = function(x, y) {
+		var hovered;
+
+		var eventHovered;
+		this.chapters.forEach(function(chapter) {
+			eventHovered = chapter.mentionEvents.find(function(event) {
+				return event.contains(x, y);
+			});
+		}, this);
+
+		var chapterHovered = this.chapters.find(function(chapter) {
+			return chapter.contains(x, y);
+		});
+
+		var characterHovered = this.characters.find(function(character) {
+			return character.contains(x, y);
+		});
+		
+		if(eventHovered) hovered = eventHovered;
+		if(chapterHovered) hovered = chapterHovered;
+		if(characterHovered) hovered = characterHovered;
+		this.hovered = hovered;
+	}
+}
+
 function setup() {
 	canvas = createCanvas(100, 100);
 	canvas.parent(document.getElementById("mentions"));
@@ -11,82 +85,46 @@ function setup() {
 }
 
 function draw() {
-	if(story) updateMentions(story);
-
 	background(0);
 
-	if(mentionCharacters.length > 0) {
-		var reversedCharacters = mentionCharacters.reverse();
-		reversedCharacters.forEach(function(character) {
+	if(mentions) {
+		mentions.line = new Line();
+
+		mentions.setChapters();
+		mentions.setCharacters();
+
+		mentions.characters.forEach(function(character) {
 			character.show();
 		});
-	}
-
-	if(mentionChapters.length > 0) {
-		mentionChapters.forEach(function(chapter) {
+		mentions.chapters.forEach(function(chapter) {
 			chapter.show();
-			chapter.mentionEvents.forEach(function(event) {
-				event.show();
-			});
 		});
+
+		mentions.line.show();
+
+		if(mentions.hoverText) mentions.hoverText.show();
+
+		mentions.setHovered(mouseX, mouseY);
+		var hoverText;
+		if(mentions.hovered) {
+			if(mentions.hovered instanceof MentionCharacter) {
+				textStyle(BOLD);
+				textSize(18);
+				hoverText = new HoverText(mentions.hovered.character.names.join(", "), mentions.hovered.character.color, mouseX + 15, mouseY + 5, width - mouseX - 30);
+			} else {
+				textStyle(NORMAL);
+				textSize(12);
+				hoverText = new HoverText(mentions.hovered.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
+			}
+		}
+		if(hoverText) hoverText.show();
 	}
-
-	if(mentionLine) mentionLine.show();
-
-	if(hoverText) hoverText.show();
-}
-
-var updateMentions = function(story) {
-	mentionLine = new Line();
-
-	mentionChapters = [];
-	story.chapters.forEach(function(chapter) {
-		mentionChapters.push(new MentionChapter(chapter));
-	});
-	var availableSpace = height - (mentionLine.margin * 4) - ((mentionLine.numFletches * mentionLine.slope.y) * 2);
-	var numElements = 0;
-	mentionChapters.forEach(function(chapter) {
-		availableSpace -= (chapter.margin + chapter.weight + chapter.margin);
-		numElements++;
-		chapter.mentionEvents.forEach(function(event) {
-			availableSpace -= (event.margin + event.weight + event.margin);
-			numElements++;
-		});
-	});
-	var individualSpace = availableSpace / (numElements - 1);
-	var y = (mentionLine.margin * 2) + (mentionLine.numFletches * mentionLine.slope.y);
-	mentionChapters.forEach(function(chapter) {
-		chapter.y = y;
-		y += chapter.margin + chapter.weight + chapter.margin + individualSpace;
-		chapter.mentionEvents.forEach(function(event) {
-			event.y = y;
-			y += event.margin + event.weight + event.margin + individualSpace;
-		});
-	});
-
-	mentionCharacters = [];
-	if(characters) characters.forEach(function(character) {
-		if(character.isSelected) mentionCharacters.push(new MentionCharacter(character));
-	});
 }
 
 function windowResized() {
-	resizeCanvas(canvas.parent().offsetWidth - 17, canvas.parent().offsetHeight - 4);
-	updateMentions(story);
-}
-
-function mouseMoved() {
-	hoverText = null;
-	mentionChapters.forEach(function(chapter) {
-		if(chapter.isHovered(mouseX, mouseY)) {
-			hoverText = new HoverText(chapter.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
-		}
-		chapter.mentionEvents.forEach(function(event) {
-			if(event.isHovered(mouseX, mouseY)) {
-				hoverText = new HoverText(event.string, null, mouseX + 15, mouseY + 5, width - mouseX - 30);
-			}
-		});
-	});
+	var resizedHeight = canvas.parent().offsetHeight - 4;
+	if(height > resizedHeight) resizedHeight = height;
+	resizeCanvas(canvas.parent().offsetWidth - 17, resizedHeight);
 }
 
 var HoverText = function(string, color, x, y, width) {
@@ -110,6 +148,9 @@ var Line = function() {
 	this.botPoint = {x:width/2, y:height-this.margin};
 	this.slope = {x:20, y:20};
 	this.numFletches = 3;
+
+	this.topMargin = this.topPoint.y + (this.slope.y * this.numFletches) + this.margin;
+	this.bottomMargin = this.topPoint.y + (this.slope.y * this.numFletches) + this.margin;
 
 	this.show = function() {
 		noFill();
@@ -139,13 +180,27 @@ var MentionChapter = function(chapter) {
 	this.title = chapter.title;
 
 	this.mentionEvents = [];
-	chapter.events.forEach(function(event) {
-		this.mentionEvents.push(new MentionEvent(event));
-	}, this);
+	this.getEvents = function() {
+		var mentionEvents = [];
 
-	chapter.events.forEach(function(event) {
-		this.string += event.string + "\n";
-	}, this);
+		chapter.events.forEach(function(event) {
+			mentionEvents.push(new MentionEvent(event));
+		});
+
+		return mentionEvents;
+	}
+	this.mentionEvents = this.getEvents();
+	
+	this.getString = function() {
+		var string = "";
+
+		chapter.events.forEach(function(event) {
+			string += event.string + "\n";
+		});
+
+		return string;
+	}
+	this.string = this.getString();
 
 	this.show = function() {
 		noFill();
@@ -154,6 +209,10 @@ var MentionChapter = function(chapter) {
 
 		var box = this.getBox();
 		line(box.x, box.y, box.x2, box.y);
+
+		this.mentionEvents.forEach(function(event) {
+			event.show();
+		});
 	}
 
 	this.getBox = function() {
@@ -161,7 +220,7 @@ var MentionChapter = function(chapter) {
 		return box;
 	}
 
-	this.isHovered = function(x, y) {
+	this.contains = function(x, y) {
 		var box = this.getBox();
 		return x >= box.x - 5 && x <= box.x2 + 5 && y >= box.y - 5 && y <= box.y2 + 5;
 	}
@@ -170,7 +229,7 @@ var MentionChapter = function(chapter) {
 var MentionEvent = function(event) {
 	this.width = 10;
 	this.margin = 10;
-	this.weight = 1;
+	this.weight = 2;
 	this.y;
 	this.string = event.string;
 
@@ -188,7 +247,7 @@ var MentionEvent = function(event) {
 		return box;
 	}
 
-	this.isHovered = function(x, y) {
+	this.contains = function(x, y) {
 		var box = this.getBox();
 		return x >= box.x - 5 && x <= box.x2 + 5 && y >= box.y - 5 && y <= box.y2 + 5;
 	}
@@ -198,11 +257,12 @@ var MentionCharacter = function(character) {
 	this.initialMargin = 30;
 	this.margin = 15;
 	this.weight = 3;
-	this.diam = 10;
+
+	this.isHovered = false;
 
 	this.character = character;
 	this.x = width/2;
-	var index = mentionCharacters.length;
+	var index = mentions.characters.length;
 	this.isRightSide = index % 2 == 0;
 	var sideIndex = (index - (index%2)) / 2;
 	if(this.isRightSide) {
@@ -210,58 +270,113 @@ var MentionCharacter = function(character) {
 	} else {
 		this.x -= this.initialMargin + (sideIndex * this.margin);
 	}
-	// console.log(this.x);
 
 	this.circles = [];
-	mentionChapters.forEach(function(chapter) {
-		if(chapter.string.containsAny(this.character.names)) {
-			this.circles.push({x:this.x, y:chapter.y + chapter.margin - chapter.weight});
-		}
-	}, this);
+	this.getCircles = function() {
+		var circles = [];
+
+		mentions.chapters.forEach(function(chapter) {
+			if(chapter.string.containsAny(this.character.names)) {
+				circles.push(new Circle(this.x, chapter.y + chapter.margin - chapter.weight));
+			}
+		}, this);
+
+		return circles;
+	}
+	this.circles = this.getCircles();
+	
 
 	this.squares = [];
-	var mentionsStart;
-	var mentionsEnd;
-	mentionChapters.forEach(function(chapter) {
-		chapter.mentionEvents.forEach(function(event) {
-			if(event.string.containsAny(this.character.names)) {
-				if(!mentionsStart) mentionsStart = event; 
-				mentionsEnd = event;
-			} else {
-				if(mentionsStart) {
-					this.squares.push({x:width/2, y:mentionsStart.y + mentionsStart.margin - mentionsStart.weight, x2:this.x, y2:mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight, corner:25});
-					mentionsStart = null;
-					mentionsEnd = null;
+	this.getSquares = function() {
+		var squares = [];
+
+		var mentionsStart;
+		var mentionsEnd;
+		mentions.chapters.forEach(function(chapter) {
+			chapter.mentionEvents.forEach(function(event) {
+				if(event.string.containsAny(this.character.names)) {
+					if(!mentionsStart) mentionsStart = event; 
+					mentionsEnd = event;
+				} else {
+					if(mentionsStart) {
+						squares.push(new Rectangle(width/2, mentionsStart.y + mentionsStart.margin - mentionsStart.weight, this.x, mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight));
+						mentionsStart = null;
+						mentionsEnd = null;
+					}
 				}
-			}
+			}, this);
 		}, this);
-	}, this);
-	if(mentionsStart) this.squares.push({x:width/2, y:mentionsStart.y + mentionsStart.margin - mentionsStart.weight, x2:this.x, y2:mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight, corner:25});
+		if(mentionsStart) squares.push(new Rectangle(width/2, mentionsStart.y + mentionsStart.margin - mentionsStart.weight, this.x, mentionsEnd.y + mentionsEnd.margin - mentionsEnd.weight));
+
+		return squares;
+	}
+	this.squares = this.getSquares();
+	
 
 	this.show = function() {
-		this.circles.forEach(function(circle) {
-			rectMode(CENTER);
-			noStroke();
-			fill(this.character.color);
-			ellipse(circle.x, circle.y, this.diam);
-			rectMode(CORNER);
-		}, this);
+		var isHovered = false;
+		if(mentions.hovered instanceof MentionCharacter && mentions.hovered.character.names == this.character.names) isHovered = true;
 
-		this.squares.forEach(function(square) {
-			rectMode(CORNERS);
-			stroke(this.character.color);
-			strokeWeight(this.weight);
-			noFill();
-			if(this.isRightSide) {
-				rect(square.x, square.y, square.x2, square.y2, 0, square.corner, square.corner, 0);
-			} else {
-				rect(square.x2, square.y, square.x, square.y2, square.corner, 0, 0, square.corner);
-			}
-			rectMode(CORNER);
+		var diam = this.diam;
+		rectMode(CENTER);
+		noStroke();
+		fill(this.character.color);
+		this.circles.forEach(function(circle) {
+			circle.show(isHovered);
 		}, this);
+		rectMode(CORNER);
+
+		rectMode(CORNERS);
+		stroke(this.character.color);
+		noFill();
+		this.squares.forEach(function(square) {
+			square.show(isHovered, this.isRightSide);
+		}, this);
+		rectMode(CORNER);
 	}
 
-	this.isHovered = function(x, y) {
-		
+	this.contains = function(x, y) {
+		for(var i=0; i<this.circles.length; i++) if(this.circles[i].contains(x, y)) return true;
+		return false;
+	}
+}
+
+var Circle = function(x, y) {
+	this.x = x;
+	this.y = y;
+	this.diameter = 8;
+
+	this.contains = function(x, y) {
+		return (x > this.x - this.diameter && x < this.x + this.diameter && y > this.y - this.diameter && y < this.y + this.diameter);
+	}
+
+	this.show = function(isHovered) {
+		var diam = this.diameter;
+		if(isHovered) diam = diam * 1.5;
+		ellipse(this.x, this.y, diam);
+	}
+}
+
+var Rectangle = function(x, y, x2, y2) {
+	this.x = x;
+	this.y = y;
+	this.x2 = x2;
+	this.y2 = y2;
+	this.corner = 25;
+	this.weight = 3;
+
+	this.show = function(isHovered, isRight) {
+		var wt = this.weight;
+		if(isHovered) wt = wt * 1.5;
+		strokeWeight(wt);
+		if(isRight) {
+			rect(this.x, this.y, this.x2, this.y2, 0, this.corner, this.corner, 0);
+		} else {
+			rect(this.x2, this.y, this.x, this.y2, this.corner, 0, 0, this.corner);
+		}
+	}
+
+	this.contains = function(x, y) {
+
 	}
 }

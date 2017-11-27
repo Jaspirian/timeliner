@@ -18,7 +18,7 @@ var Story = function(lines) {
 	this.getCharacters = function(oldCharacters) {
 		//remove characters with no mentions, if they're not user-defined
 		oldCharacters = oldCharacters.filter(function(character) {
-			return this.mentions(character) || (character.isSelected);
+			return (character.isMentioned || character.isSelected);
 		}, this);
 
 		//get all capital bits, then add them if they're not included
@@ -42,22 +42,6 @@ var Story = function(lines) {
 		});
 		return oldCharacters;
 	};
-
-	//if at least one of the character's names is \b included \b in the story, return true.
-	this.mentions = function(character) { //PERFORMANCE COULD BE IMPROVED
-		var isContained = false;
-		this.chapters.forEach(function(chapter) {
-			chapter.events.forEach(function(event) {
-				character.names.forEach(function(name) {
-					var regexp = new RegExp(".*\\b(" + name + ")\\b.*");
-					if(regexp.test(event.string)) {
-						isContained = true;
-					};
-				});
-			});
-		});
-		return isContained;
-	}
 }
 
 var Chapter = function(title, events) {
@@ -65,16 +49,10 @@ var Chapter = function(title, events) {
 	this.events = events;
 
 	this.equals = function(comparisonChapter) {
-		// console.log(this);
-		// console.log(comparisonChapter);
 		if(!comparisonChapter || !this) return false;
-		// console.log("not null.");
 		if(this.title != comparisonChapter.title) return false;
-		// console.log("equal titles.");
 		if(this.events.length != comparisonChapter.events.length) return false;
-		// console.log("same length.");
 		for(var i=0; i<this.events.length; i++) if(this.events[i].string != comparisonChapter.events[i].string) return false;
-		// console.log("same letters.");
 		return true;
 	}
 }

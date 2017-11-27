@@ -248,8 +248,13 @@ body, html {
 	cursor: pointer;
 }
 
-#groups .group .squaresDiv .close:hover:after {
+#groups .group .squaresDiv .close:after {
+	color: gray;
 	content: "X";
+}
+
+#groups .group .squaresDiv .close:hover:after {
+	color: white;
 }
 
 #groups .group .bottomDiv {

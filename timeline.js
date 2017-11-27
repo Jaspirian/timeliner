@@ -26,15 +26,12 @@ var Timeline = function() {
 	this.drawDivs = function(element) {
 		element.removeAllChildren();
 
-		var arrowTop = document.createElement("div");
-		arrowTop.className = "arrow top";
-		var arrowBottom = document.createElement("div");
-		arrowBottom.className = "arrow bottom";
+		var arrowTop = makeElement("div", "arrow top");
+		var arrowBottom = makeElement("div", "arrow bottom");
 
 		element.appendChild(arrowTop);
 
-		var body = document.createElement("div");
-		body.id = "body";
+		var body = makeElement("div", null, "body");
 
 		this.chapterDivs.forEach(function(chapDiv) {
 			body.appendChild(chapDiv.div);
@@ -44,94 +41,76 @@ var Timeline = function() {
 		element.appendChild(arrowBottom);
 	}
 
-	this.reformatCharacter = function(character) {
-		var nameSpans = $("#timeline").find("span");
-		for(var i=0; i<nameSpans.length; i++) {
-			if(character.names.includes(nameSpans[i].textContent)) {
-				var color = "";
-				var bold = "";
+	this.getSpans = function() {
+		return $("#timeline").find("span");
+	}
+
+	this.styleCharacter = function(character, focusing) {
+		var nameSpans = timeline.getSpans();
+		[].forEach.call(nameSpans, function(span) {
+			if(character.names.includes(span.textContent)) {
+				span.style.color = "";
+				if(focusing) span.style.color = character.color;
 				if(character.isSelected) {
-					color = character.color;
-					bold = "bold";
+					span.style.color = character.color;
+					span.style.fontWeight = "bold";
 				}
-				nameSpans[i].style.color = color;
-				nameSpans[i].style.fontWeight = bold; 
 			}
-		}	
+		});
 	}
 }
 
 var clickableHover = function(element, event) {
-	// console.log("hovering");
 	event.stopPropagation();
-	//get all spans
+
 	var hovered = characters.find(function(character) {
 		return character.names.includes(element.textContent);
 	});
-	var nameSpans = $("#timeline").find("span");
-	for(var i=0; i<nameSpans.length; i++) {
-		if(hovered.names.includes(nameSpans[i].textContent)) {
-			nameSpans[i].style.color = hovered.color;
-		}
-	}
+	timeline.styleCharacter(hovered, true);
+	
 	timeline.hoveredCharacter = hovered;
 }
 
 var clickableLeave = function() {
-	// console.log("leaving");
-	timeline.hoveredCharacter = null;
+	timeline.styleCharacter(timeline.hoveredCharacter, false);
 
-	var nameSpans = $("#timeline").find("span");
-	for(var i=0; i<nameSpans.length; i++) {
-		var character = characters.find(function(char) {
-			return char.names.includes(nameSpans[i].textContent);
-		});
-		if(character.names.includes(nameSpans[i].textContent)) {
-			if(!character.isSelected) nameSpans[i].style.color = "";
-		}
-	}
+	timeline.hoveredCharacter = null;
 }
 
 var clicks = function(event) {
-	// console.log("clicking");
 	event.stopPropagation();
 	var character = timeline.hoveredCharacter;
 	if(character) {
-		var bold = "";
-		var color = "";
-		character.isSelected = !character.isSelected;
-		if(character.isSelected) {
-			groups.addDiv(character);
-			bold = "bold";
-			color = character.color;
+		if(!character.isSelected) {
+			selectCharacter(character);
 		} else {
-			groups.removeDiv(character);
-		}
-		var nameSpans = $("#timeline").find("span");
-		for(var i=0; i<nameSpans.length; i++) {
-			if(character.names.includes(nameSpans[i].textContent)) {
-				nameSpans[i].style.fontWeight = bold;
-				nameSpans[i].style.color = color;
-			}
+			unselectCharacter(character);
 		}
 	}
 }
 
 var wrapWithSpan = function(string, find, character) {
-	var finds = find.split(" ");
-	var regexStr = "\\b("
-	for(var i=0; i<finds.length; i++) {
-		regexStr += finds[i];
-	if(i<finds.length-1) regexStr += "\\s*(?:<.*?>)*\\s*";
-	}
-	regexStr += "(?![^<]*>))\\b";
+	
+	this.getRegex = function(needle) {
+		var regexp;
 
-	var regexp = new RegExp(regexStr, "g");
+		var needles = needle.split(" ");
+		var regexStr = "\\b("
+		for(var i=0; i<needles.length; i++) {
+			regexStr += needles[i];
+			if(i<needles.length-1) regexStr += "\\s*(?:<.*?>)*\\s*";
+		}
+		regexStr += "(?![^<]*>))\\b";
+
+		var regexp = new RegExp(regexStr, "g");
+
+		return regexp;
+	}
 
 	var style = "";
 	if(character.isSelected) style = "color:" + character.color + "; font-weight:bold";
 
-	string = string.replace(regexp, function(match) {
+	string = string.replace(this.getRegex(find), function(match) {
 		return '<span onmouseover="clickableHover(this, event)" onclick="clicks(event)" onmouseout="clickableLeave()" class="clickable" style="' + style + '">' + match + "</span>";		
 	});
 
@@ -139,9 +118,7 @@ var wrapWithSpan = function(string, find, character) {
 }
 
 var ChapterDiv = function(chapter) {
-	var div = document.createElement("div");
-	div.className = "chapter";
-	this.div = div;
+	this.div = makeElement("div", "chapter")
 
 	this.titleDiv = new TitleDiv(chapter.title);
 	this.eventDivs = [];
@@ -152,29 +129,19 @@ var ChapterDiv = function(chapter) {
 }
 
 var TitleDiv = function(string) {
-	var div = document.createElement("div");
-	div.className = "title";
-	div.textContent = string;
-	this.div = div;
+	this.div = makeElement("div", "title", null, string);
 }
 
 var EventDiv = function(event, i) {
-	this.div = document.createElement("div");
-	this.div.className = "event";
-	if(i % 2 != 0) this.div.className += " right";
-	this.div.textContent = event.string;
+	this.div = makeElement("div", "event", null, event.string);
+	if(i % 2 != 0) this.div.classList.add("right");
 
 	this.replaceNamesWithSpans = function() {
 
 		var innerHTML = this.div.innerHTML;
 
 		//get names to replace
-		var clickableNames = [];
-		characters.forEach(function(character) {
-			character.names.forEach(function(name) {
-				clickableNames.push({name:name, character:character});
-			});
-		});
+		var clickableNames = this.getNames();
 
 		//order in descending size
 		clickableNames.sort(function(a,b) {
@@ -186,12 +153,22 @@ var EventDiv = function(event, i) {
 		//replace in innerHTML
 		clickableNames.forEach(function(name) {
 			var style = "";
-			// if(name.character.isSelected) style = "style=\"color:" + name.character.color + "; font-weight:bold;\"";
-			// innerHTML = replaceIgnoringArrows(innerHTML, name.name, "<span onmouseover=\"clickableHover(this, event)\" onclick=\"clicks(event)\" onmouseout=\"clickableLeave()\" class=\"clickable " + name.character.names[0] + "\" " + style + ">" + name.name + "</span>");
 			innerHTML = wrapWithSpan(innerHTML, name.name, name.character);
 		});
 		// console.log(innerHTML);
 		return innerHTML;
+	}
+
+	this.getNames = function() {
+		var names = [];
+
+		characters.forEach(function(character) {
+			character.names.forEach(function(name) {
+				names.push({name:name, character:character});
+			});
+		});
+
+		return names;
 	}
 
 	this.div.innerHTML = this.replaceNamesWithSpans();

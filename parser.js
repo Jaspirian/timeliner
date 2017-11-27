@@ -3,12 +3,14 @@ var story;
 var characters;
 var timeline;
 var groups;
+var mentions;
 
 window.onload = function() {
 	story = new Story();
 	characters = [];
 	timeline = new Timeline();
 	groups = new Groups();
+	mentions = new Mentions();
 
 	document.getElementById("overlay-back").onclick = function() {fade()};
 
@@ -48,9 +50,6 @@ var parse = function() {
 	//groups
 	groups.pushStory(newStory);
 
-	//mentions
-	updateMentions(newStory);
-
 	//update Story
 	story = newStory;
 }
@@ -58,16 +57,17 @@ var parse = function() {
 //replace texts with an uploaded text file.
 var fileUpload = function(file) {
 	// alert("hi");
-	console.log(file);
+	// console.log(file);
 
 	var fileReader = new FileReader();
 	fileReader.onload = function(fileLoadedEvent) {
-		console.log("loading!");
+		// console.log("loading!");
 	    var textFromFileLoaded = fileLoadedEvent.target.result;
-	    console.log(textFromFileLoaded);
+	    // console.log(textFromFileLoaded);
 	    document.getElementById("notesArea").value = textFromFileLoaded;
 	    parse();
 	};
 
   	fileReader.readAsText(file, "UTF-8");
+  	document.getElementById("upload").value = "";
 }

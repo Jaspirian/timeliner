@@ -34,7 +34,7 @@ var Groups = function(charactersArr) {
 	this.pushStory = function(newStory) { //ROOM FOR PERFORMANCE IMPROVEMENTS
 		// this.story = Object.assign({}, newStory);
 		this.divs.forEach(function(div) {
-			div.resetList();
+			div.resetListItems();
 		});
 	}
 }
@@ -64,209 +64,96 @@ var BlankDiv = function() {
 		}
 	})(this.textbox);
 	this.div.appendChild(this.button);
-
-	// this.readout = document.createElement("p");
-	// this.readout.className = "tooltip";
-	// this.readout.textContent = "Separate pseudonyms with commas.";
-	// this.readout.textContent += "\nClick a title and press enter to edit it.";
-	// this.div.appendChild(this.readout);
 }
 
 var GroupDiv = function(character) {
 	this.div;
 	this.character = character;
 
-	this.div = document.createElement("div");
-	this.div.className = "group";
+	this.div = makeElement("div", "group");
 	this.div.style.backgroundColor = character.color;
 
-	//Top bar
-	this.topBar = document.createElement("div");
-	this.topBar.className = "topDiv";
-	this.div.appendChild(this.topBar);
+	this.makeTopDiv = function() {
+		var topBar;
 
-	this.topLeft = document.createElement("div");
-	this.topLeft.className = "titleDiv";
-	this.topBar.appendChild(this.topLeft);
-	this.title = document.createElement("div");
-	this.title.contentEditable = true;
-	this.title.className = "title";
-	this.title.id = character.names[0];
-	this.title.textContent = character.names[0];
-	for(var i=1; i<character.names.length; i++) {
-		this.title.textContent += ", " + character.names[i];
-	}
-	this.title.onkeypress = function(event) {
-		if(event.key === "Enter") {
-			addCharacter(createCharacter(this.textContent));
-			return false;
+		topBar = makeElement("div", "topDiv");
+
+		this.topLeft = makeElement("div", "titleDiv");
+		topBar.appendChild(this.topLeft);
+		this.title = makeElement("div", "title", character.names[0], character.names.join(", "));
+		this.title.contentEditable = true;
+		this.title.onkeypress = function(event) {
+			if(event.key === "Enter") {
+				addCharacter(createCharacter(this.textContent));
+				return false;
+			}
 		}
+		this.topLeft.appendChild(this.title);
+
+		this.topRight = makeElement("div", "squaresDiv");
+		topBar.appendChild(this.topRight);
+
+		this.close = makeElement("div", "close");
+		this.close.onclick = (function (char) {
+			return function() {
+				if(groups.poppedOut) fade();
+				var spans = timeline.getSpans();
+				unselectCharacter(char);
+			};
+		})(character); //This pass here makes it run immediately, but I honestly don't understand that too well yet
+		this.topRight.appendChild(this.close);
+
+		this.color = document.createElement("input");
+		this.color.type = "button";
+		this.color.style.width = "20px";
+		this.color.style.height = "20px";
+		var args = {valueElement: null, value: this.div.style.backgroundColor, width: 100};
+		this.picker = new jscolor(this.color, args);
+		this.picker.onFineChange = function(char, elem, button) {
+			return function() {
+				var backColor = button.style.backgroundColor;
+				elem.style.backgroundColor = backColor;
+				char.color = backColor;
+				timeline.styleCharacter(char);
+			}
+		}(character, this.div, this.color);
+		this.topRight.appendChild(this.color);
+
+		return topBar;
 	}
-	this.topLeft.appendChild(this.title);
+	this.div.appendChild(this.makeTopDiv());
 
-	this.topRight = document.createElement("div");
-	this.topRight.className = "squaresDiv";
-	this.topBar.appendChild(this.topRight);
-	this.color = document.createElement("input");
-	this.color.type = "button";
-	this.color.style.width = "20px";
-	this.color.style.height = "20px";
-	var args = {valueElement: null, value: this.div.style.backgroundColor, width: 100};
-	this.picker = new jscolor(this.color, args);
-	this.picker.onFineChange = function(char, elem, button) {
-		return function() {
-			var backColor = button.style.backgroundColor;
-			elem.style.backgroundColor = backColor;
-			char.color = backColor;
-			timeline.reformatCharacter(char);
-		}
-	}(character, this.div, this.color);
-	this.topRight.appendChild(this.color);
+	this.list = makeElement("ul");
+	var div = this.div;
+	this.list.onclick = function() {
+		if(!groups.poppedOut) fade(div);
+	}
 
-	this.close = document.createElement("div");
-	this.close.className = "close";
-	this.close.onclick = (function (char) {
-		return function() {
-			if(groups.poppedOut) fade();
-			char.isSelected = false;
-			var spans = $("#timeline").find("span");
-			char.names.forEach(function(name) {
-				for(var i=0; i<spans.length; i++) {
-					if(spans[i].textContent == name) {
-						spans[i].style.color = "";
-						spans[i].style.fontWeight = "";
-					}
-				}
-			});
-			groups.removeDiv(character);
-		};
-	})(character); //This pass here makes it run immediately, but I honestly don't understand that too well yet
-	this.topRight.appendChild(this.close);
+	this.resetListItems = function() {
+		if(this.list) this.list.removeAllChildren();
 
-	//bottom bit
-	this.bottomBar = document.createElement("div");
-	this.bottomBar.className = "bottomDiv";
-	this.div.appendChild(this.bottomBar);
-
-	//list
-	this.list;
-	this.resetList = function() {
-		var referencedEvents = [];
-		if(this.list) this.list.remove();
-
-		var list;
-		// var chapters = groups.story.chapters;
-		// var chapters = story.chapters;
-		// console.log(chapters);
-		list = document.createElement("ul");
-		// groups.story.chapters.forEach(function(chapter) {
-		story.chapters.forEach(function(chapter) {
-			chapter.events.forEach(function(event) {
-				character.names.forEach(function(name) {
-					if(event.string.includes(name) && !referencedEvents.includes(event)) {
-						var item = document.createElement("li");
-						item.textContent = event.string;
-						referencedEvents.push(event);
-						list.appendChild(item);
-					}
-				});
-			});
+		var eventsMentioned = this.character.getMentions().filter(function(mention) {
+			return mention instanceof Event;
 		});
-
-		var div = this.div;
-		list.onclick = function() {
-			if(!groups.poppedOut) fade(div);
-		}
-		this.bottomBar.appendChild(list);
-		this.list = list;
+		eventsMentioned.forEach(function(event) {
+			var item = makeElement("li", null, null, event.string);
+			this.list.appendChild(item);
+		}, this);		
 	}
-	this.resetList();
-}
+	this.resetListItems();
 
-var addCharacter = function(character) {
-	if(!character) return;
-	replaceRedundantCharacters(character);
-	if(!characters.includes(character)) {
-		characters.push(character);
+	this.makeBottomDiv = function() {
+		var bottomDiv;
+
+		//bottom bit
+		bottomDiv = makeElement("div", "bottomDiv");
+
+		//list
+		bottomDiv.appendChild(this.list);
+
+		return bottomDiv;
 	}
-	groups.removeDiv(character);
-	var div = groups.addDiv(character);
-	if(groups.poppedOut) {
-		fade(div);
-	}
-	timeline.reformatCharacter(character);
-}
-
-var createCharacter = function(stringOrArray) {
-	//escape if there's no entry
-	if(!stringOrArray) return;
-
-	//handle comma-separated
-	if(stringOrArray.includes(",")) {
-		var names = stringOrArray.split(",");
-		for(var i=0; i<names.length; i++) names[i] = names[i].trim();
-	} else {
-		var name = stringOrArray;
-	}
-	
-	//get character
-	var addedCharacter;
-	if(names) {
-		addedCharacter = getCharacter(names);
-	} else {
-		addedCharacter = getCharacter(name);
-	}
-
-	//escape if this is just a duplicate entry
-	if(addedCharacter && addedCharacter.isSelected && (!names || addedCharacter.names == names)) return;
-	//create a new character if needed
-	if(addedCharacter) {
-		if(names) addedCharacter.names = names;
-	} else {
-		if(names) {
-			addedCharacter = new Character(names);
-		} else {
-			addedCharacter = new Character([name]);
-		}
-		addedCharacter.isUserMade = true;
-	}
-	addedCharacter.isSelected = true;
-
-	return addedCharacter;
-}
-
-//trims characters with only names contained by the provided character, skipping over the character itself.
-var replaceRedundantCharacters = function(replacing) {
-	var replaced = [];
-
-	replaced = characters.filter(function(character) {
-		return replacing.names.duplicates(character.names).length == character.names.length && replacing != character;
-	});
-
-	replaced.forEach(function(character) {
-		if(character.isSelected) groups.removeDiv(character);
-	});
-
-	characters = characters.filter(function(character) {
-		return !replaced.includes(character);
-	});
-}
-
-//returns a character with names containing the name string or name array provided.
-var getCharacter = function(name) {
-	var found;
-
-	if(Array.isArray(name)) {
-		found = characters.find(function(character) {
-			return character.names.duplicates(name).length > 0;
-		});
-	} else {
-		found = characters.find(function(character) {
-			return character.names.includes(name);
-		});
-	}
-
-	return found;
+	this.div.appendChild(this.makeBottomDiv());
 }
 
 var fade = function(div) {

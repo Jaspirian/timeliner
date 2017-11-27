@@ -82,7 +82,7 @@ Drag to reorder groups
 Save as cookies?
 Minimize group
 Maximize group
-Pop out group
+//Pop out group
 Expand one column
 Save to text file
 Fix scrolling problem
