@@ -46,6 +46,8 @@ var Timeline = function() {
 	}
 
 	this.styleCharacter = function(character, focusing) {
+		// console.log(character);
+		// if(!character) return;
 		// console.log("Styling");
 		// console.log(character.names);
 		// console.log(character.names.join(", "));
@@ -76,6 +78,8 @@ var clickableHover = function(element, event) {
 }
 
 var clickableLeave = function() {
+	event.stopPropagation();
+	
 	timeline.styleCharacter(timeline.hoveredCharacter, false);
 
 	timeline.hoveredCharacter = null;

@@ -39,6 +39,10 @@ var parse = function() {
 	document.getElementById("title").textContent = newLines[0];
 	// console.log(newLines);
 	var newStory = new Story(newLines);
+
+	//update Story
+	story = newStory;
+
 	// console.log(newStory);
 	
 	//characters
@@ -47,14 +51,13 @@ var parse = function() {
 	//timeline
 	timeline.pushStory(newStory);
 
-	//update Story
-	story = newStory;
 
 	//groups
 	groups.pushStory(newStory);
 
-	console.log("we did it");
-	console.log(newStory);
+	// console.log("we did it");
+	// console.log(newStory);
+	// console.log(characters);
 }
 
 //replace texts with an uploaded text file.
@@ -66,11 +69,70 @@ var fileUpload = function(file) {
 	fileReader.onload = function(fileLoadedEvent) {
 		// console.log("loading!");
 	    var textFromFileLoaded = fileLoadedEvent.target.result;
-	    // console.log(textFromFileLoaded);
-	    document.getElementById("notesArea").value = textFromFileLoaded;
-	    parse();
+	    readFile(textFromFileLoaded);
+	    // parse();
 	};
 
   	fileReader.readAsText(file, "UTF-8");
   	document.getElementById("upload").value = "";
+}
+
+var readFile = function(text) {
+	var notes = [];
+	var characterLines = [];
+
+	lines = text.split("\n");
+	var characterStarted = false;
+	lines.forEach(function(line) {
+		if(line.includes("/*CHARACTERS*/")) {
+			characterStarted = true;
+		} else {
+			if(!characterStarted) {
+				notes.push(line);
+			} else {
+				characterLines.push(line);
+			}
+		}
+	});
+
+	document.getElementById("notesArea").value = notes.join("\n");
+
+	parse();
+
+	characterLines.forEach(function(line) {
+		var name = stringToName(line);
+		createCharacter(name);
+	});
+}
+
+var fileSave = function() {
+	var title = sanitizeTitle(document.getElementById("notesArea").value.split("\n")[0]);
+	
+	var text = document.getElementById("notesArea").value.split("\n");
+	var usedCharacters = [];
+	characters.forEach(function(character) {
+		if(character.isSelected) {
+			usedCharacters.push(character.names);
+		}
+	});
+
+	text = text.join("\n");
+	if(usedCharacters) {
+		text += "\n";
+		text += "\n";
+		text += "/*CHARACTERS*/";
+		text += "\n";
+		text += usedCharacters.join("\n");
+	}
+	var blob = new Blob([text], {type: "text/plain;charset=utf-8"});
+	saveAs(blob, title + ".txt");
+}
+
+var sanitizeTitle = function(title) {
+	while(title && title[title.length-1] == ".") {
+		title = title.slice(0, -1);
+	}
+
+	if(!title) title = "timeline";
+	return title;
 }

@@ -6,6 +6,7 @@
 <script src="jquery-3.2.1.min.js"></script>
 <script src="p5.js"></script>
 <script src="jscolor.js"></script>
+<script src="FileSaver.js"></script>
 
 <script src="globals.js"></script>
 <script src="parser.js"></script>
@@ -51,7 +52,14 @@ Click it again to remove it--or you can manipulate the word on its corresponding
 
 Try clicking on the header (e.g. "This" if you clicked on "This") and typing in a comma, then another word, like "Click." Then press enter.</textarea>
 
-			<input type="file" id="upload" accept=".txt" onchange="fileUpload(this.files[0])">
+			<div id="fileArea">
+
+				<label for="upload" id="uploadLabel">Load</label>
+				<input type="file" id="upload" accept=".txt" style="display: none" onchange="fileUpload(this.files[0])">
+
+				<button type="button" id="download" content="Hi" onclick="fileSave()">Save</button>
+
+			</div>
 
 		</div>
 

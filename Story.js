@@ -18,7 +18,9 @@ var Story = function(lines) {
 	this.getCharacters = function(oldCharacters) {
 		//remove characters with no mentions, if they're not user-defined
 		oldCharacters = oldCharacters.filter(function(character) {
-			return (character.isMentioned || character.isSelected);
+			// console.log(character);
+			// console.log(character.isMentioned());
+			return (character.isMentioned() || character.isSelected);
 		}, this);
 
 		//get all capital bits, then add them if they're not included

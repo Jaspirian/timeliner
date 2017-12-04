@@ -85,6 +85,23 @@ body, html {
 	width: 100%;
 }
 
+#fileArea {
+	display: flex;
+}
+
+#uploadLabel {
+	margin-left: 0;
+	margin-right: auto;
+	
+    appearance: button;
+    -webkit-appearance: button;
+    padding: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
+    font-family: arial;
+    font-size: small;
+}
+
 #timeline, #groups, #mentions {
 	overflow: scroll;
 	overflow-x: hidden;

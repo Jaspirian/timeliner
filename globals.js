@@ -21,20 +21,10 @@ var randColor = function(minLightness, maxLightness) {
 //returns an array of elements duplicated in both arrays.
 Array.prototype.duplicates = function(compareArray) {
 	var copies = [];
-
-	// console.log(this);
-	console.log(compareArray);
-
-	compareArray.forEach(function(el) {
-		// console.log(this);
-		// console.log(el);
-		if(this.includes(el)) {
-			// console.log("included!");
-			copies.push(el);
-		}
+	
+	compareArray.forEach(function(elem) {
+		if(this.indexOf(elem) != -1) copies.push(elem);
 	}, this);
-
-	// console.log(copies);
 
 	return copies;
 }

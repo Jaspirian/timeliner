@@ -86,3 +86,9 @@ Maximize group
 Expand one column
 Save to text file
 Fix scrolling problem
+
+/*CHARACTERS*/
+Uther Pendragon, Uther
+Merlin
+Arthur
+Uther Sir Ulfius, Sir Ulfius

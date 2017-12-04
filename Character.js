@@ -34,7 +34,10 @@ var Character = function(names) {
 	this.isMentioned = function() {
 		for(var i=0; i<story.chapters.length; i++) {
 			for(var j=0; j<story.chapters[i].events.length; j++) {
-				if(story.chapters[i].events[j].containsAny(this.names)) return true;
+				if(story.chapters[i].events[j].string.containsAny(this.names)) {
+					// console.log(story.chapters[i].events[j].string + ", " + this.names.join(","));
+					return true;
+				}
 			}
 		}
 		return false;
@@ -43,6 +46,8 @@ var Character = function(names) {
 
 //returns an array, splitting by commas if applicable
 var stringToName = function(string) {
+	string = string.replace(/\n/, "");
+	string = string.replace(/\r/, "");
 	var array;
 
 	if(string.includes(",")) {
@@ -84,16 +89,16 @@ var createCharacter = function(names) {
 	// 	console.log(character.names.join(", "));
 	// });
 
-	// console.log(names);
+	console.log(names);
 	if(!names) return;
 	var character = new Character(names);
-	// console.log(character);
+	console.log(character);
 
 	//exact match
 	var exactMatch = getCharacter(character.names, true);
 	// console.log(exactMatch);
 	if(exactMatch) {
-		// console.log("exact match");
+		console.log("exact match");
 		if(exactMatch.isSelected) return;
 		selectExistingCharacter(exactMatch);
 		return;
@@ -103,12 +108,13 @@ var createCharacter = function(names) {
 	var partialMatch = getCharacter(character.names);
 	// console.log(partialMatch);
 	if(partialMatch) {
-		// console.log("Partial match");
+		console.log("Partial match");
 		// console.log(partialMatch.names.join(", "));
 		if(character.names.length > partialMatch.names.length) {
 			// console.log("more names on this one!");
 			changeName(partialMatch, character.names);
 			partialMatch.isSelected = true;
+			timeline.styleCharacter(partialMatch);
 			groups.addDiv(partialMatch);
 			return;
 		} else {
@@ -139,16 +145,21 @@ var createCharacter = function(names) {
 }
 
 var changeName = function(character, names) {
-	console.log(character);
-	console.log(names);
+	// console.log(character);
+	// console.log(names);
 
 	character.names = names;
 	trimDuplicates(character);
 
-	console.log(character.names.join(", "));
+	// console.log(character.names.join(", "));
 	timeline.styleCharacter(character);
 
-	if(character.isSelected) groups.updateDiv(character);
+	if(character.isSelected) {
+		groups.updateDiv(character);
+	} else {
+		character.isSelected = true;
+		groups.addDiv(character);
+	}
 }
 
 var selectExistingCharacter = function(character) {
@@ -167,7 +178,7 @@ var trimDuplicates = function(replacement) {
 	characters.forEach(function(character) {
 		if(character != replacement) {
 			character.names = character.names.filter(function(name) {
-				if(replacement.names.includes(name)) console.log("included: " + character.names.join(", ") + " at " + name);
+				// if(replacement.names.includes(name)) console.log("included: " + character.names.join(", ") + " at " + name);
 				return !replacement.names.includes(name);
 			});
 			// console.log(character.names.join(", "));
