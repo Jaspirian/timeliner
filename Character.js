@@ -41,126 +41,175 @@ var Character = function(names) {
 	}
 }
 
-var addCharacter = function(character) { //DOES NOT HANDLE RETURNING TO FEWER NAMES
-	if(!character) return;
-	characters = replaceRedundantCharacters(character);
-	if(character.isSelected) groups.removeDiv(character);
-	if(!characters.includes(character)) {
-		characters.push(character);
+//returns an array, splitting by commas if applicable
+var stringToName = function(string) {
+	var array;
+
+	if(string.includes(",")) {
+		array = string.split(",");
+		array = array.map(function(str) {
+			return str.trim();
+		});
+	} else {
+		array = [string];
 	}
-	character.isSelected = true;
-	var div = groups.addDiv(character);
-	if(groups.poppedOut) {
-		fade(div);
-	}
+
+	return array;
+}
+
+var addCharacter = function(character) {
+	// console.log("adding " + character.names.join(", "));
+	characters.push(character);
+
+	timeline.drawDivs();
 	timeline.styleCharacter(character);
+
+	groups.renewDivs();
+
+	mentions.setCharacters(); 
 }
 
 var removeCharacter = function(character) {
-
-}
-
-var selectCharacter = function(character) {
-	character.isSelected = true;
-
-	//timeline
-	var nameSpans = timeline.getSpans();
-	[].forEach.call(nameSpans, function(span) {
-		if(character.names.includes(span.textContent)) {
-			span.style.fontWeight = "bold";
-			span.style.color = character.color;
-		}
+	characters = characters.filter(function(char) {
+		return char != character;
 	});
 
-	//groups
+	timeline.drawDivs();
+
+	mentions.setCharacters();
+}
+
+var createCharacter = function(names) {
+	// characters.forEach(function(character) {
+	// 	console.log(character.names.join(", "));
+	// });
+
+	// console.log(names);
+	if(!names) return;
+	var character = new Character(names);
+	// console.log(character);
+
+	//exact match
+	var exactMatch = getCharacter(character.names, true);
+	// console.log(exactMatch);
+	if(exactMatch) {
+		// console.log("exact match");
+		if(exactMatch.isSelected) return;
+		selectExistingCharacter(exactMatch);
+		return;
+	}
+
+	//partial match
+	var partialMatch = getCharacter(character.names);
+	// console.log(partialMatch);
+	if(partialMatch) {
+		// console.log("Partial match");
+		// console.log(partialMatch.names.join(", "));
+		if(character.names.length > partialMatch.names.length) {
+			// console.log("more names on this one!");
+			changeName(partialMatch, character.names);
+			partialMatch.isSelected = true;
+			groups.addDiv(partialMatch);
+			return;
+		} else {
+			// console.log("fewer names on this one!");
+			if(partialMatch.isSelected) {
+				// console.log("Already selected.");
+				trimDuplicates(character);
+				character.isSelected = true;
+				addCharacter(character);
+				return;
+			} else {
+				// console.log("Not already selected.");
+				partialMatch.isSelected = true;
+				changeName(partialMatch, character.names);
+				groups.addDiv(partialMatch);
+				return;
+			}
+			
+		}
+		
+	}
+
+	//new
+	console.log("new!");
+	character.isSelected = true;
+	character.isUserMade = true;
+	addCharacter(character);
+}
+
+var changeName = function(character, names) {
+	console.log(character);
+	console.log(names);
+
+	character.names = names;
+	trimDuplicates(character);
+
+	console.log(character.names.join(", "));
+	timeline.styleCharacter(character);
+
+	if(character.isSelected) groups.updateDiv(character);
+}
+
+var selectExistingCharacter = function(character) {
+	character.isSelected = true;
+
+	timeline.styleCharacter(character);
+
 	groups.addDiv(character);
 }
 
-var unselectCharacter = function(character) {
-	character.isSelected = false;
+var trimDuplicates = function(replacement) {
+	// console.log("trimming!");
+	// console.log(replacement.names.join(", "));
 
-	//timeline
-	var nameSpans = timeline.getSpans();
-	[].forEach.call(nameSpans, function(span) {
-		if(character.names.includes(span.textContent)) {
-			span.style.fontWeight = "";
-			span.style.color = "";
+	//remove conflicting names from remaining
+	characters.forEach(function(character) {
+		if(character != replacement) {
+			character.names = character.names.filter(function(name) {
+				if(replacement.names.includes(name)) console.log("included: " + character.names.join(", ") + " at " + name);
+				return !replacement.names.includes(name);
+			});
+			// console.log(character.names.join(", "));
 		}
 	});
 
-	//groups
-	groups.removeDiv(character);
-}
-
-//returns characters without those who had only names contained by the provided character, skipping over the character itself.
-var replaceRedundantCharacters = function(replacing) {
-	var replaced = [];
-
-	replaced = characters.filter(function(character) {
-		return replacing.names.duplicates(character.names).length == character.names.length && replacing != character;
+	//get characters with no names left
+	var removes = characters.filter(function(character) {
+		return character.names.length < 1;
 	});
 
-	replaced.forEach(function(character) {
+	//trim the characters array
+	characters = characters.filter(function(character) {
+		return character.names.length > 0;
+	});
+
+	//remove all divs of characters with no names
+	removes.forEach(function(character) {
 		if(character.isSelected) groups.removeDiv(character);
 	});
+	timeline.drawDivs();
 
-	var trimmedCharacters = characters.filter(function(character) {
-		return !replaced.includes(character);
+	//update all the rest
+	characters.forEach(function(character) {
+		if(character.isSelected) groups.updateDiv(character);
 	});
-
-	return trimmedCharacters;
 }
 
-var createCharacter = function(stringOrArray) {
-	//escape if there's no entry
-	if(!stringOrArray) return;
-
-	//handle comma-separated
-	if(stringOrArray.includes(",")) {
-		var names = stringOrArray.split(",");
-		for(var i=0; i<names.length; i++) names[i] = names[i].trim();
-	} else {
-		var name = stringOrArray;
-	}
-	
-	//get character
-	var addedCharacter;
-	if(names) {
-		addedCharacter = getCharacter(names);
-	} else {
-		addedCharacter = getCharacter(name);
-	}
-
-	//escape if this is just a duplicate entry
-	if(addedCharacter && addedCharacter.isSelected && (!names || addedCharacter.names == names)) return;
-	//create a new character if needed
-	if(addedCharacter) {
-		if(names) addedCharacter.names = names;
-	} else {
-		if(names) {
-			addedCharacter = new Character(names);
-		} else {
-			addedCharacter = new Character([name]);
-		}
-		addedCharacter.isUserMade = true;
-	}
-
-	return addedCharacter;
-}
-
-//returns a character with names containing the name string or name array provided.
-var getCharacter = function(name) {
+//returns a character with names containing the name array provided.
+var getCharacter = function(names, isExact) {
 	var found;
 
-	if(Array.isArray(name)) {
+	if(isExact) {
 		found = characters.find(function(character) {
-			return character.names.duplicates(name).length > 0;
+			return character.names.isEqual(names);
 		});
 	} else {
 		found = characters.find(function(character) {
-			return character.names.includes(name);
+			return character.names.duplicates(names).length > 0;
 		});
 	}
+
 
 	return found;
 }

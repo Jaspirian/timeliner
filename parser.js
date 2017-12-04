@@ -47,11 +47,14 @@ var parse = function() {
 	//timeline
 	timeline.pushStory(newStory);
 
+	//update Story
+	story = newStory;
+
 	//groups
 	groups.pushStory(newStory);
 
-	//update Story
-	story = newStory;
+	console.log("we did it");
+	console.log(newStory);
 }
 
 //replace texts with an uploaded text file.

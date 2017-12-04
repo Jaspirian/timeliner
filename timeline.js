@@ -23,13 +23,13 @@ var Timeline = function() {
 		this.chapterDivs = newDivs;
 	}
 
-	this.drawDivs = function(element) {
-		element.removeAllChildren();
+	this.drawDivs = function() {
+		this.container.removeAllChildren();
 
 		var arrowTop = makeElement("div", "arrow top");
 		var arrowBottom = makeElement("div", "arrow bottom");
 
-		element.appendChild(arrowTop);
+		this.container.appendChild(arrowTop);
 
 		var body = makeElement("div", null, "body");
 
@@ -37,8 +37,8 @@ var Timeline = function() {
 			body.appendChild(chapDiv.div);
 		});
 
-		element.appendChild(body);
-		element.appendChild(arrowBottom);
+		this.container.appendChild(body);
+		this.container.appendChild(arrowBottom);
 	}
 
 	this.getSpans = function() {
@@ -46,10 +46,14 @@ var Timeline = function() {
 	}
 
 	this.styleCharacter = function(character, focusing) {
+		// console.log("Styling");
+		// console.log(character.names);
+		// console.log(character.names.join(", "));
 		var nameSpans = timeline.getSpans();
 		[].forEach.call(nameSpans, function(span) {
 			if(character.names.includes(span.textContent)) {
 				span.style.color = "";
+				span.style.fontWeight = "";
 				if(focusing) span.style.color = character.color;
 				if(character.isSelected) {
 					span.style.color = character.color;
@@ -82,9 +86,13 @@ var clicks = function(event) {
 	var character = timeline.hoveredCharacter;
 	if(character) {
 		if(!character.isSelected) {
-			selectCharacter(character);
+			character.isSelected = true;
+			timeline.styleCharacter(character);
+			groups.addDiv(character);
 		} else {
-			unselectCharacter(character);
+			character.isSelected = false;
+			timeline.styleCharacter(character);
+			groups.removeDiv(character);
 		}
 	}
 }

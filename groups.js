@@ -2,33 +2,68 @@ var Groups = function(charactersArr) {
 	this.divs = [];
 	// this.story;
 	this.poppedOut;
+	this.container;
 
-	var container = document.getElementById("groups");
-	container.removeAllChildren(1);
+	this.container = document.getElementById("groups");
 
-	container.appendChild(new BlankDiv().div);
+	this.container.appendChild(new BlankDiv().div);
 
 	this.addDiv = function(character) {
-		var addingDiv = new GroupDiv(character);
+		// console.log("adding div " + character.names.join(", "));
+		var alreadyExists = this.divs.find(function(div) {
+			return div.character.names == character.names;
+		});
+		if(alreadyExists) return;
+
+		var addingDiv = new CharacterDiv(character);
 		this.divs.push(addingDiv);
 		addingDiv.div.onclick = function(event) { 
 			if(event.target == this) fade(this)
 		};
-		container.appendChild(addingDiv.div);
+		this.container.appendChild(addingDiv.div);
 
 		return addingDiv.div;
 	}
 
 	this.removeDiv = function(character) {
+		// console.log("removing div " + character.names.join(", "));
 		var removingDiv;
 		this.divs.forEach(function(div) {
 			if(div.character == character) removingDiv = div;
 		});
+		// console.log(removingDiv);
+		// console.log(this.divs);
+		// console.log(this.divs.includes(removingDiv.div));
 		if(!removingDiv) return;
-		container.removeChild(removingDiv.div);
-		this.divs.filter(function(div) {
+		this.container.removeChild(removingDiv.div);
+		this.divs = this.divs.filter(function(div) {
 			return div.character != character;
 		});
+		// console.log(this.divs);
+	}
+
+	this.updateDiv = function(character) {
+		// console.log("updating div " + character.names.join(", "));
+		var div = this.divs.find(function(div) {
+			return div.character == character;
+		});
+		// console.log(div);
+		if(!div) return;
+
+		div.update();
+	}
+
+	this.updateAllDivs = function() {
+		this.divs.forEach(function(div) {
+			div.update();
+		});
+	}
+
+	this.renewDivs = function() {
+		this.removeAllDivs();
+		characters.forEach(function(character) {
+			if(character.isSelected) this.addDiv(character);
+		}, this);
 	}
 
 	this.pushStory = function(newStory) { //ROOM FOR PERFORMANCE IMPROVEMENTS
@@ -36,6 +71,12 @@ var Groups = function(charactersArr) {
 		this.divs.forEach(function(div) {
 			div.resetListItems();
 		});
+	}
+
+	this.removeAllDivs = function() {
+		console.log("removing all divs.");
+		this.container.removeAllChildren(1);
+		this.divs = [];
 	}
 }
 
@@ -49,7 +90,8 @@ var BlankDiv = function() {
 
 	this.textbox.onkeypress = function(event) {
 		if(event.key === "Enter") {
-			addCharacter(createCharacter(this.value));
+			if(!this.value) return;
+			createCharacter(stringToName(this.value));
 			this.value = "";
 		}
 	};
@@ -59,76 +101,141 @@ var BlankDiv = function() {
 	this.button.textContent = "Add character";
 	this.button.onclick = (function(nameBox) {
 		return function() {
-			addCharacter(createCharacter(nameBox.value));
+			if(!nameBoc.value) return;
+			createCharacter(stringToName(nameBox.value));
 			nameBox.value = "";
 		}
 	})(this.textbox);
 	this.div.appendChild(this.button);
 }
 
-var GroupDiv = function(character) {
+var CharacterDiv = function(character) {
 	this.div;
 	this.character = character;
+
+	this.maximizedState = 0; //0 for neutral, -1 is minimized, 1 is maximized
 
 	this.div = makeElement("div", "group");
 	this.div.style.backgroundColor = character.color;
 
-	this.makeTopDiv = function() {
-		var topBar;
+	this.setWindowBar = function() {
+		var bar = makeElement("div", "windowBar");
 
-		topBar = makeElement("div", "topDiv");
+		this.setColor = function() {
+			var box = makeElement("input", "color")
+			box.type = "button";
+			box.style.width = "20px";
+			box.style.height = "20px";
+			var args = {valueElement: null, value: this.div.style.backgroundColor, width: 100};
+			var picker = new jscolor(box, args);
+			picker.onFineChange = (function(char, elem, button) {
+				return function() {
+					var backColor = button.style.backgroundColor;
+					elem.style.backgroundColor = backColor;
+					char.color = backColor;
+					timeline.styleCharacter(char);
+				}
+			})(this.character, this.div, box);
 
-		this.topLeft = makeElement("div", "titleDiv");
-		topBar.appendChild(this.topLeft);
-		this.title = makeElement("div", "title", character.names[0], character.names.join(", "));
-		this.title.contentEditable = true;
-		this.title.onkeypress = function(event) {
+			return box;
+		}
+		var color = this.setColor();
+
+		this.setSpacer = function() {
+			var box = makeElement("div", "spacer", null);
+
+			return box;
+		}
+		var spacer = this.setSpacer();
+
+		var minimize = makeElement("div", "minimize", null, "-");
+		var maximize = makeElement("div", "maximize", null, "+");
+
+		this.setMinimizeClick = function(minimize, maximize) {
+			minimize.onclick = (function(characterDiv, maximize) {
+				return function() {
+					if(characterDiv.maximizedState == -1) {
+						characterDiv.eventsBar.style.maxHeight = "";
+						characterDiv.maximizedState = 0;
+						minimize.style.color = "";
+					} else {
+						characterDiv.eventsBar.style.maxHeight = "0px";
+						characterDiv.maximizedState = -1;
+						minimize.style.color = "white";
+						maximize.style.color = "";
+					}
+				}
+			})(this, maximize);
+		}
+		this.setMinimizeClick(minimize, maximize);
+
+		this.setMaximizeClick = function(maximize, minimize) {
+			maximize.onclick = (function(characterDiv, minimize) {
+				return function() {
+					if(characterDiv.maximizedState == 1) {
+						characterDiv.eventsBar.style.maxHeight = "300px";
+						characterDiv.maximizedState = 0;
+						maximize.style.color = "";
+					} else {
+						characterDiv.eventsBar.style.maxHeight = "none";
+						characterDiv.maximizedState = 1;
+						maximize.style.color = "white";
+						minimize.style.color = "";
+					}
+				}
+			})(this, minimize);
+		}
+		this.setMaximizeClick(maximize, minimize);
+
+		this.setClose = function() {
+			var box = makeElement("div", "close", null, "X");
+			box.onclick = (function (char) {
+				return function() {
+					if(groups.poppedOut) fade();
+					char.isSelected = false;
+					groups.removeDiv(char);
+					timeline.styleCharacter(char);
+				};
+			})(this.character);
+
+			return box;
+		}
+		var close = this.setClose();
+
+		bar.appendChild(color);
+		bar.appendChild(spacer);
+		bar.appendChild(minimize);
+		bar.appendChild(maximize);
+		bar.appendChild(close);
+
+		return bar;
+	}
+	this.windowBar = this.setWindowBar();
+	this.div.appendChild(this.windowBar);
+
+	this.setNameBar = function() {
+		var bar = makeElement("div", "nameBar", character.names[0], character.names.join(", "));
+		bar.contentEditable = true;
+		bar.onkeypress = function(event) {
 			if(event.key === "Enter") {
-				addCharacter(createCharacter(this.textContent));
+				if(!this.textContent) return;
+				changeName(character, stringToName(this.textContent));
+				this.blur();
 				return false;
 			}
 		}
-		this.topLeft.appendChild(this.title);
 
-		this.topRight = makeElement("div", "squaresDiv");
-		topBar.appendChild(this.topRight);
-
-		this.close = makeElement("div", "close");
-		this.close.onclick = (function (char) {
-			return function() {
-				if(groups.poppedOut) fade();
-				var spans = timeline.getSpans();
-				unselectCharacter(char);
-			};
-		})(character); //This pass here makes it run immediately, but I honestly don't understand that too well yet
-		this.topRight.appendChild(this.close);
-
-		this.color = document.createElement("input");
-		this.color.type = "button";
-		this.color.style.width = "20px";
-		this.color.style.height = "20px";
-		var args = {valueElement: null, value: this.div.style.backgroundColor, width: 100};
-		this.picker = new jscolor(this.color, args);
-		this.picker.onFineChange = function(char, elem, button) {
-			return function() {
-				var backColor = button.style.backgroundColor;
-				elem.style.backgroundColor = backColor;
-				char.color = backColor;
-				timeline.styleCharacter(char);
-			}
-		}(character, this.div, this.color);
-		this.topRight.appendChild(this.color);
-
-		return topBar;
+		return bar;
 	}
-	this.div.appendChild(this.makeTopDiv());
+	this.nameBar = this.setNameBar();
+	this.div.appendChild(this.nameBar);
 
 	this.list = makeElement("ul");
-	var div = this.div;
-	this.list.onclick = function() {
-		if(!groups.poppedOut) fade(div);
-	}
-
+	this.list.onclick = (function(div) {
+		return function() {
+			fade(div);
+		}
+	})(this.div);
 	this.resetListItems = function() {
 		if(this.list) this.list.removeAllChildren();
 
@@ -138,22 +245,25 @@ var GroupDiv = function(character) {
 		eventsMentioned.forEach(function(event) {
 			var item = makeElement("li", null, null, event.string);
 			this.list.appendChild(item);
-		}, this);		
+			// console.log(event.string);
+		}, this);
 	}
 	this.resetListItems();
 
-	this.makeBottomDiv = function() {
-		var bottomDiv;
+	this.setEventsBar = function() {
+		var events = makeElement("div", "eventsBar");
 
-		//bottom bit
-		bottomDiv = makeElement("div", "bottomDiv");
+		events.appendChild(this.list);
 
-		//list
-		bottomDiv.appendChild(this.list);
-
-		return bottomDiv;
+		return events;
 	}
-	this.div.appendChild(this.makeBottomDiv());
+	this.eventsBar = this.setEventsBar();
+	this.div.appendChild(this.eventsBar);
+
+	this.update = function() {
+		this.nameBar.textContent = this.character.names.join(", ");
+		this.resetListItems();
+	}
 }
 
 var fade = function(div) {

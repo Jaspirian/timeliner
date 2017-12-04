@@ -19,12 +19,22 @@ var randColor = function(minLightness, maxLightness) {
 }
 
 //returns an array of elements duplicated in both arrays.
-Array.prototype.duplicates = function(array) {
+Array.prototype.duplicates = function(compareArray) {
 	var copies = [];
 
-	for(var i=0; i<array.length; i++) {
-		if(this.includes(array[i])) copies.push(array[i]);
-	}
+	// console.log(this);
+	console.log(compareArray);
+
+	compareArray.forEach(function(el) {
+		// console.log(this);
+		// console.log(el);
+		if(this.includes(el)) {
+			// console.log("included!");
+			copies.push(el);
+		}
+	}, this);
+
+	// console.log(copies);
 
 	return copies;
 }
@@ -49,4 +59,35 @@ var makeElement = function(elementType, className, id, textContent) {
 	if(textContent) elem.textContent = textContent;
 
 	return elem;
+}
+
+//returns whether two arrays are equal. Works for arrays of objects. Modified from StackOverflow's Tomas Zato.
+Array.prototype.isEqual = function(compareArray) {
+	if(!this && !compareArray) return true;
+	if(!this || !compareArray) return false;
+	if(this.length != compareArray.length) return false;
+
+	for (var i = 0, l=this.length; i < l; i++) {
+        if (this[i] instanceof Array && compareArray[i] instanceof Array) {
+            if (!this[i].isEqual(compareArray[i]))
+                return false;       
+        }           
+        else if (this[i] != compareArray[i]) { 
+            return false;   
+        }           
+    }       
+    return true;
+}
+
+//returns an array, converting a string if given one--or simply the array if it already is.
+var convertToArray = function(stringOrArray) {
+	var array;
+
+	if(Array.isArray(stringOrArray)) {
+		array = stringOrArray;
+	} else {
+		array = [stringOrArray];
+	}
+
+	return array;
 }

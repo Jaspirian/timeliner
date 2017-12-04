@@ -58,9 +58,10 @@ var Mentions = function() {
 
 		var eventHovered;
 		this.chapters.forEach(function(chapter) {
-			eventHovered = chapter.mentionEvents.find(function(event) {
+			tempHovered = chapter.mentionEvents.find(function(event) {
 				return event.contains(x, y);
 			});
+			if(tempHovered) eventHovered = tempHovered;
 		}, this);
 
 		var chapterHovered = this.chapters.find(function(chapter) {
