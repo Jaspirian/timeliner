@@ -64,29 +64,6 @@ Arthur goes to the Archbishop and explains he has withdrawn the sword.
 On Twelfth-Day all the barons arrive at the Sword in the Stone and fail to pull it out until Arthur does. Angry to be outdone by a middle-born boy, they put things off 'til Candlemas.
 On Candlemas the same thing happens and the Barons delay until Easter.
 
-FEATURES
-
-//Click name to add to groups
-//Click X to remove from groups
-//Preserve "of the", so Randy van Bilderbilt = hover on Randy, hover on Bilderbilt, and full hover on van
-//Add additional names
-//Load from text file
-//Changeable color
-//Random colors
-//Handle "St. Jerome"
-//Handle multiple click/hover options
-Drag event to group
-//Bugfix: importing text file doesn't work after typing in notesArea
-//Edit name
-Drag to reorder groups
-Save as cookies?
-Minimize group
-Maximize group
-//Pop out group
-Expand one column
-Save to text file
-Fix scrolling problem
-
 /*CHARACTERS*/
 Uther Pendragon, Uther
 Merlin

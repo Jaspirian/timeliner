@@ -94,7 +94,8 @@ function draw() {
 		mentions.setChapters();
 		mentions.setCharacters();
 
-		mentions.characters.forEach(function(character) {
+		// var reversed = mentions.characters.reverse();
+		mentions.characters.reverse().forEach(function(character) {
 			character.show();
 		});
 		mentions.chapters.forEach(function(chapter) {
@@ -122,10 +123,15 @@ function draw() {
 	}
 }
 
-function windowResized() {
+var resizeMentions = function() {
+	console.log("hi");
 	var resizedHeight = canvas.parent().offsetHeight - 4;
 	if(height > resizedHeight) resizedHeight = height;
 	resizeCanvas(canvas.parent().offsetWidth - 17, resizedHeight);
+}
+
+function windowResized() {
+	resizeMentions();
 }
 
 var HoverText = function(string, color, x, y, width) {

@@ -22,6 +22,13 @@ window.onload = function() {
     	}, 100 );
   		// parse();
 	}
+
+	document.getElementById("mentions").onresize = function() {
+		console.log("hi");
+		var resizedHeight = canvas.parent().offsetHeight - 4;
+		if(height > resizedHeight) resizedHeight = height;
+		resizeCanvas(canvas.parent().offsetWidth - 17, resizedHeight);
+	}
 }
 
 //from CMS of Stack Overflow
